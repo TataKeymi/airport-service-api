@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import ForeignKey
+from django.db.models import ForeignKey, ManyToManyField
 from django.conf import settings
 
 
@@ -65,6 +65,7 @@ class Flight(models.Model):
         related_name="flights")
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
+    crews = ManyToManyField(Crew)
 
     def __str__(self):
         return f"Route: {self.route} by airplane: {self.airplane}"
