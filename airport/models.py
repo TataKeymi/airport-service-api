@@ -17,20 +17,24 @@ class Airport(models.Model):
     closest_big_city = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.name} ({self.closest_big_city})"
+        return f"{self.name}"
 
 
 class Route(models.Model):
-    source = ForeignKey(Airport, on_delete=models.CASCADE)
-    destination = ForeignKey(
-        Crew,
+    source = ForeignKey(
+        Airport,
         on_delete=models.CASCADE,
-        related_name="routes",
+        related_name="departure_routes",
+    )
+    destination = ForeignKey(
+        Airport,
+        on_delete=models.CASCADE,
+        related_name="arrival_routes",
     )
     distance = models.IntegerField()
 
     def __str__(self):
-        return f"{self.source} -> {self.destination}, distance = {self.distance}"
+        return f"{self.source} -> {self.destination}"
 
 
 class AirplaneType(models.Model):
@@ -68,7 +72,7 @@ class Flight(models.Model):
     crews = ManyToManyField(Crew)
 
     def __str__(self):
-        return f"Route: {self.route} by airplane: {self.airplane}"
+        return f"Flight by route: {self.route}"
 
 
 class Order(models.Model):
@@ -96,3 +100,9 @@ class Ticket(models.Model):
         on_delete=models.CASCADE,
         related_name="tickets"
     )
+
+    class Meta:
+        unique_together = ("row", "seat", "flight")
+
+    def __str__(self):
+        return f"Ticket of: {self.order}, row: {self.row}, seat: {self.seat}, flight: {self.flight}"
