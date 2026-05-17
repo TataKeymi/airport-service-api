@@ -6,8 +6,7 @@ from airport.models import (Crew,
                             AirplaneType,
                             Airplane,
                             Flight,
-                            Order,
-                            Ticket)
+                            Order)
 
 from airport.serializers import (CrewSerializer,
                                  AirportSerializer,
@@ -16,9 +15,12 @@ from airport.serializers import (CrewSerializer,
                                  AirplaneSerializer,
                                  FlightSerializer,
                                  OrderSerializer,
-                                 TicketSerializer, RouteListSerializer, RouteRetrieveSerializer, AirplaneListSerializer,
-                                 AirplaneRetrieveSerializer, FlightListSerializer, FlightRetrieveSerializer,
-                                 TicketListSerializer, TicketRetrieveSerializer)
+                                 RouteListSerializer,
+                                 RouteRetrieveSerializer,
+                                 AirplaneListSerializer,
+                                 AirplaneRetrieveSerializer,
+                                 FlightListSerializer,
+                                 FlightRetrieveSerializer, OrderListSerializer, OrderRetrieveSerializer)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -89,21 +91,25 @@ class FlightViewSet(viewsets.ModelViewSet):
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
-    serializer_class = OrderSerializer
 
-
-class TicketViewSet(viewsets.ModelViewSet):
-    queryset = Ticket.objects.all()
+    def get_queryset(self):
+        queryset = self.queryset.filter(user=self.request.user)
+        if self.action in ("list", "retrieve"):
+            queryset.prefetch_related(
+                "tickets__flight",
+                "tickets__flight__route",
+                "tickets__flight__airplane")
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
-            return TicketListSerializer
+            return OrderListSerializer
         elif self.action == "retrieve":
-            return TicketRetrieveSerializer
-        return TicketSerializer
+            return OrderRetrieveSerializer
+        return OrderSerializer
 
-    def get_queryset(self):
-        queryset = self.queryset
-        if self.action in ("list", "retrieve"):
-            queryset = self.queryset.select_related("flight", "order")
-        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+

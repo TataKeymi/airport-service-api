@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
@@ -75,21 +76,42 @@ class FlightRetrieveSerializer(FlightSerializer):
     crews = CrewSerializer(many=True, read_only=True)
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = ("id", "created")
-
-
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ("id", "row", "seat", "flight")
 
-
-class TicketListSerializer(TicketSerializer):
-    flight = serializers.StringRelatedField(many=False, read_only=True)
+    def validate(self, attrs):
+        Ticket.validate_seat_and_row(attrs["seat"],
+                                     attrs["flight"].airplane.seats_in_row,
+                                     attrs["row"],
+                                     attrs["flight"].airplane.rows,
+                                     serializers.ValidationError)
 
 
 class TicketRetrieveSerializer(TicketSerializer):
-    flight = FlightRetrieveSerializer(many=False, read_only=True)
+    flight = FlightListSerializer(many=False, read_only=True)
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = ("id", "created", "tickets")
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            tickets_data = validated_data.pop("tickets")
+            order = Order.objects.create(**validated_data)
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=order, **ticket_data)
+            return order
+
+
+class OrderListSerializer(OrderSerializer):
+    tickets = serializers.StringRelatedField(many=True, read_only=True, allow_empty=False)
+
+
+class OrderRetrieveSerializer(OrderSerializer):
+    tickets = TicketRetrieveSerializer(many=True, read_only=True, allow_empty=False)

@@ -105,4 +105,36 @@ class Ticket(models.Model):
         unique_together = ("row", "seat", "flight")
 
     def __str__(self):
-        return f"Ticket of: {self.order}, row: {self.row}, seat: {self.seat}, flight: {self.flight}"
+        return f"Ticket's row: {self.row}, seat: {self.seat}, flight: {self.flight}"
+
+    @staticmethod
+    def validate_seat_and_row(seat: int, num_seats: int,
+                              row: int, num_rows: int, error_to_raise):
+        if not (1 <= seat <= num_seats):
+            raise error_to_raise(
+                {
+                "seat": f"seat must be in range [1, {num_seats}], not {seat}"
+                }
+            )
+        elif not (1 <= row <= num_rows):
+            raise error_to_raise(
+                {
+                    "row": f"row must be in range [1, {num_rows}], not {row}"
+                }
+            )
+
+    def clean(self):
+        Ticket.validate_seat_and_row(self.seat, self.flight.airplane.seats_in_row,
+                                     self.row, self.flight.airplane.seats_in_row,
+                                     ValueError)
+
+    def save(self,
+             force_insert=False,
+             force_update=False,
+             using=None,
+             update_fields=None):
+        self.full_clean()
+        return super(Ticket, self).save(force_insert=force_insert,
+                                        force_update=force_update,
+                                        using=using,
+                                        update_fields=update_fields)
