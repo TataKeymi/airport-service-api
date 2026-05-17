@@ -40,7 +40,10 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "rest_framework",
     "airport.apps.AirportConfig",
+    "user"
 ]
+
+AUTH_USER_MODEL = "user.User"
 
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
