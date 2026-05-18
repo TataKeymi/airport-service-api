@@ -83,6 +83,9 @@ class Order(models.Model):
         related_name="orders"
     )
 
+    class Meta:
+        ordering = ("-created",)
+
     def __str__(self):
         return f"Order of: {self.user}"
 
