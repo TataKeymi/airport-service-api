@@ -64,16 +64,16 @@ class FlightSerializer(serializers.ModelSerializer):
         fields = ("id", "route", "airplane", "departure_time", "arrival_time", "crews")
 
 
-class FlightListSerializer(FlightSerializer):
+class FlightListSerializer(serializers.ModelSerializer):
     route = serializers.StringRelatedField(many=False, read_only=True)
     airplane = serializers.CharField(source="airplane.name", read_only=True)
     crews = serializers.StringRelatedField(many=True, read_only=True)
+    tickets_available = serializers.IntegerField(read_only=True)
 
-
-class FlightRetrieveSerializer(FlightSerializer):
-    route = RouteRetrieveSerializer(many=False, read_only=True)
-    airplane = AirplaneRetrieveSerializer(many=False, read_only=True)
-    crews = CrewSerializer(many=True, read_only=True)
+    class Meta:
+        model = Flight
+        fields = ("id", "route", "airplane", "departure_time",
+                  "arrival_time", "crews", "tickets_available")
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -88,6 +88,17 @@ class TicketSerializer(serializers.ModelSerializer):
                                      attrs["flight"].airplane.rows,
                                      serializers.ValidationError)
         return attrs
+
+
+class FlightRetrieveSerializer(FlightSerializer):
+    route = RouteRetrieveSerializer(many=False, read_only=True)
+    airplane = AirplaneRetrieveSerializer(many=False, read_only=True)
+    crews = CrewSerializer(many=True, read_only=True)
+    tickets = serializers.StringRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "crews", "tickets")
 
 
 class TicketRetrieveSerializer(TicketSerializer):

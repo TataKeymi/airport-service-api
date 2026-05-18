@@ -1,3 +1,4 @@
+from django.db.models import Count, F
 from rest_framework import viewsets
 
 from airport.models import (Crew,
@@ -136,10 +137,17 @@ class FlightViewSet(viewsets.ModelViewSet):
             crews = self._params_to_ints(crews)
             queryset = queryset.filter(crews__id__in=crews)
 
-        if self.action in ("list", "retrieve"):
+        if self.action == "list":
+            queryset = (queryset.select_related("airplane", "route")
+                        .prefetch_related("crews")
+                        .annotate(tickets_available=F("airplane__rows")
+                                                    * F("airplane__seats_in_row")
+                                                    - Count("tickets")))
+
+        if self.action == "retrieve":
             queryset = (queryset.select_related("airplane", "route")
                         .prefetch_related("crews"))
-        return queryset.distinct()
+        return queryset.distinct().order_by("id")
 
 
 class OrderViewSet(viewsets.ModelViewSet):
