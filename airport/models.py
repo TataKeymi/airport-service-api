@@ -125,7 +125,7 @@ class Ticket(models.Model):
 
     def clean(self):
         Ticket.validate_seat_and_row(self.seat, self.flight.airplane.seats_in_row,
-                                     self.row, self.flight.airplane.seats_in_row,
+                                     self.row, self.flight.airplane.rows,
                                      ValueError)
 
     def save(self,

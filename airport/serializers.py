@@ -65,7 +65,7 @@ class FlightSerializer(serializers.ModelSerializer):
 
 
 class FlightListSerializer(FlightSerializer):
-    route = serializers.CharField(source="route.name", read_only=True)
+    route = serializers.StringRelatedField(many=False, read_only=True)
     airplane = serializers.CharField(source="airplane.name", read_only=True)
     crews = serializers.StringRelatedField(many=True, read_only=True)
 
@@ -87,6 +87,7 @@ class TicketSerializer(serializers.ModelSerializer):
                                      attrs["row"],
                                      attrs["flight"].airplane.rows,
                                      serializers.ValidationError)
+        return attrs
 
 
 class TicketRetrieveSerializer(TicketSerializer):
