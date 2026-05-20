@@ -23,4 +23,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/airport/", include("airport.urls", namespace="airport")),
     path("api/v1/user/", include("user.urls", namespace="user")),
-] + debug_toolbar_urls()
+    path("api-auth/", include("rest_framework.urls")),
+
+    ] + debug_toolbar_urls()
