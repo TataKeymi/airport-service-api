@@ -1,12 +1,22 @@
+import pathlib
+import uuid
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import ForeignKey, ManyToManyField
 from django.conf import settings
+from django.utils.text import slugify
+
+
+def crew_image_path(instance, filename):
+    filename = f"{slugify(instance.last_name)}-{uuid.uuid4()}" + pathlib.Path(filename).suffix
+    return pathlib.Path("upload/crews") / pathlib.Path(filename)
 
 
 class Crew(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    image = models.ImageField(null=True, upload_to=crew_image_path)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -44,6 +54,11 @@ class AirplaneType(models.Model):
         return f"{self.name}"
 
 
+def airplane_image_path(instance, filename):
+    filename = f"{slugify(instance.name)}-{uuid.uuid4()}" + pathlib.Path(filename).suffix
+    return pathlib.Path("upload/airplanes") / pathlib.Path(filename)
+
+
 class Airplane(models.Model):
     name = models.CharField(max_length=100)
     rows = models.IntegerField()
@@ -53,6 +68,7 @@ class Airplane(models.Model):
         on_delete=models.CASCADE,
         related_name="airplanes"
     )
+    image = models.ImageField(null=True, upload_to=airplane_image_path)
 
     def __str__(self):
         return f"{self.name} ({self.rows}, {self.seats_in_row})"

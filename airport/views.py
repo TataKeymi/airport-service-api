@@ -1,5 +1,7 @@
 from django.db.models import Count, F
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from airport.models import (Crew,
                             Airport,
@@ -21,12 +23,31 @@ from airport.serializers import (CrewSerializer,
                                  AirplaneListSerializer,
                                  AirplaneRetrieveSerializer,
                                  FlightListSerializer,
-                                 FlightRetrieveSerializer, OrderListSerializer, OrderRetrieveSerializer)
+                                 FlightRetrieveSerializer,
+                                 OrderListSerializer,
+                                 OrderRetrieveSerializer, CrewImageSerializer, AirplaneImageSerializer)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
+
+    def get_serializer_class(self):
+        if self.action == "upload_image":
+            return CrewImageSerializer
+        return CrewSerializer
+
+    @action(
+        methods=["POST"],
+        detail=True
+    )
+    def upload_image(self, request, pk=None):
+        crew = self.get_object()
+        serializer = self.get_serializer(crew, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AirportViewSet(viewsets.ModelViewSet):
@@ -88,6 +109,8 @@ class AirplaneViewSet(viewsets.ModelViewSet):
             return AirplaneListSerializer
         elif self.action == "retrieve":
             return AirplaneRetrieveSerializer
+        elif self.action == "upload_image":
+            return AirplaneImageSerializer
         return AirplaneSerializer
 
     def get_queryset(self):
@@ -95,6 +118,18 @@ class AirplaneViewSet(viewsets.ModelViewSet):
         if self.action in ("list", "retrieve"):
             return queryset.select_related("airplane_type")
         return queryset
+
+    @action(
+        methods=["POST"],
+        detail=True
+    )
+    def upload_image(self, request, pk=None):
+        airplane = self.get_object()
+        serializer = self.get_serializer(airplane, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FlightViewSet(viewsets.ModelViewSet):

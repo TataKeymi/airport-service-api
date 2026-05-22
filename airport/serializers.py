@@ -1,6 +1,6 @@
 from django.db import transaction
+
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
 
 from airport.models import Crew, Airport, Route, AirplaneType, Airplane, Flight, Order, Ticket
 
@@ -8,7 +8,13 @@ from airport.models import Crew, Airport, Route, AirplaneType, Airplane, Flight,
 class CrewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crew
-        fields = ("id", "first_name", "last_name")
+        fields = ("id", "first_name", "last_name", "image")
+
+
+class CrewImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Crew
+        fields = ("id", "image")
 
 
 class AirportSerializer(serializers.ModelSerializer):
@@ -47,7 +53,13 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
 class AirplaneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airplane
-        fields = ("id", "name", "rows", "seats_in_row", "airplane_type")
+        fields = ("id", "name", "rows", "seats_in_row", "airplane_type", "image")
+
+
+class AirplaneImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Airplane
+        fields = ("id", "image")
 
 
 class AirplaneListSerializer(AirplaneSerializer):
