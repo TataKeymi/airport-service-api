@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 
-from user.serializers import UserSerializer
+from user.serializers import UserSerializer, AuthTokenSerializer
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -15,7 +15,9 @@ class CreateUserView(generics.CreateAPIView):
 
 class LoginUserView(ObtainAuthToken):
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+    serializer_class = AuthTokenSerializer
     permission_classes = (AllowAny,)
+
 
 class ManageUserView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
