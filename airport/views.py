@@ -1,4 +1,6 @@
 from django.db.models import Count, F
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -25,7 +27,9 @@ from airport.serializers import (CrewSerializer,
                                  FlightListSerializer,
                                  FlightRetrieveSerializer,
                                  OrderListSerializer,
-                                 OrderRetrieveSerializer, CrewImageSerializer, AirplaneImageSerializer)
+                                 OrderRetrieveSerializer,
+                                 CrewImageSerializer,
+                                 AirplaneImageSerializer)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -37,6 +41,11 @@ class CrewViewSet(viewsets.ModelViewSet):
             return CrewImageSerializer
         return CrewSerializer
 
+    @extend_schema(
+        request=CrewImageSerializer,
+        responses=CrewSerializer,
+        description="Upload image for crew member",
+    )
     @action(
         methods=["POST"],
         detail=True
@@ -68,6 +77,23 @@ class AirportViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "name",
+                type=OpenApiTypes.STR,
+                description="Filter by airport name (ex. ?name=boryspil)"
+            ),
+            OpenApiParameter(
+                "closest_big_city",
+                type=OpenApiTypes.STR,
+                description="Filter by closest big city (ex. ?closest_big_city=kyiv)"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
@@ -95,6 +121,23 @@ class RouteViewSet(viewsets.ModelViewSet):
             queryset = queryset.select_related("source", "destination")
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source",
+                type=OpenApiTypes.INT,
+                description="Filter by source (ex. ?source=1)"
+            ),
+            OpenApiParameter(
+                "destination",
+                type=OpenApiTypes.INT,
+                description="Filter by destination (ex. ?destination=1)"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
     queryset = AirplaneType.objects.all()
@@ -119,6 +162,11 @@ class AirplaneViewSet(viewsets.ModelViewSet):
             return queryset.select_related("airplane_type")
         return queryset
 
+    @extend_schema(
+        request=AirplaneImageSerializer,
+        responses=AirplaneSerializer,
+        description="Upload image for airplane",
+    )
     @action(
         methods=["POST"],
         detail=True
@@ -184,6 +232,38 @@ class FlightViewSet(viewsets.ModelViewSet):
                         .prefetch_related("crews"))
         return queryset.distinct().order_by("id")
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "route",
+                type=OpenApiTypes.INT,
+                description="Filter by route (ex. ?route=1)"
+            ),
+            OpenApiParameter(
+                "airplane",
+                type=OpenApiTypes.INT,
+                description="Filter by airplane (ex. ?airplane=1)"
+            ),
+            OpenApiParameter(
+                "departure_time",
+                type=OpenApiTypes.DATE,
+                description="Filter by departure time (ex. ?departure_time=2022-10-23)"
+            ),
+            OpenApiParameter(
+                "arrival_time",
+                type=OpenApiTypes.DATE,
+                description="Filter by arrival time (ex. ?arrival_time=2022-10-23)"
+            ),
+            OpenApiParameter(
+                "crews",
+                type={"type": "array", "items": {"type": "number"}},
+                description="Filter by crews (ex. ?crews=1,2)"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -214,4 +294,14 @@ class OrderViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "created",
+                type=OpenApiTypes.DATE,
+                description="Filter by created date (ex. created=2022-10-23)"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
