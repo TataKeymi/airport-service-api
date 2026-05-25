@@ -24,7 +24,10 @@ class Crew(models.Model):
 
 class Airport(models.Model):
     name = models.CharField(max_length=100)
-    closest_big_city = models.CharField(max_length=100)
+    closest_big_city = models.ForeignKey(
+        "City",
+        on_delete=models.CASCADE,
+        related_name="airports")
 
     def __str__(self):
         return f"{self.name}"
@@ -81,6 +84,10 @@ class Flight(models.Model):
         related_name="flights")
     airplane = models.ForeignKey(
         Airplane,
+        on_delete=models.CASCADE,
+        related_name="flights")
+    airline = models.ForeignKey(
+        "Airline",
         on_delete=models.CASCADE,
         related_name="flights")
     departure_time = models.DateTimeField()
@@ -158,3 +165,31 @@ class Ticket(models.Model):
                                         force_update=force_update,
                                         using=using,
                                         update_fields=update_fields)
+
+
+class Country(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name_plural = "countries"
+
+    def __str__(self):
+        return self.name
+
+
+class City(models.Model):
+    name = models.CharField(max_length=100)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="cities")
+
+    class Meta:
+        verbose_name_plural = "cities"
+
+    def __str__(self):
+        return self.name
+
+
+class Airline(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name

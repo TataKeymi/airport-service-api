@@ -11,7 +11,7 @@ from airport.models import (Crew,
                             AirplaneType,
                             Airplane,
                             Flight,
-                            Order)
+                            Order, City, Country, Airline)
 
 from airport.serializers import (CrewSerializer,
                                  AirportSerializer,
@@ -29,7 +29,8 @@ from airport.serializers import (CrewSerializer,
                                  OrderListSerializer,
                                  OrderRetrieveSerializer,
                                  CrewImageSerializer,
-                                 AirplaneImageSerializer)
+                                 AirplaneImageSerializer, CitySerializer, CountrySerializer, AirlineSerializer,
+                                 CountryListSerializer)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -221,7 +222,7 @@ class FlightViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(crews__id__in=crews)
 
         if self.action == "list":
-            queryset = (queryset.select_related("airplane", "route")
+            queryset = (queryset.select_related("airplane", "route", "airline")
                         .prefetch_related("crews")
                         .annotate(tickets_available=F("airplane__rows")
                                                     * F("airplane__seats_in_row")
@@ -305,3 +306,24 @@ class OrderViewSet(viewsets.ModelViewSet):
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+
+class CountryViewSet(viewsets.ModelViewSet):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.prefetch_related("cities")
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CountryListSerializer
+        return CountrySerializer
+
+
+class AirlineViewSet(viewsets.ModelViewSet):
+    queryset = Airline.objects.all()
+    serializer_class = AirlineSerializer
