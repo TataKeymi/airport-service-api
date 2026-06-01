@@ -92,7 +92,11 @@ class Flight(models.Model):
         related_name="flights")
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
-    crews = ManyToManyField(Crew)
+    crews = ManyToManyField(
+        Crew,
+        blank=True,
+        related_name="flights",
+    )
 
     def __str__(self):
         return f"Flight by route: {self.route}"
@@ -168,7 +172,7 @@ class Ticket(models.Model):
 
 
 class Country(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
 
     class Meta:
         verbose_name_plural = "countries"

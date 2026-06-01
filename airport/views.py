@@ -11,7 +11,7 @@ from airport.models import (Crew,
                             AirplaneType,
                             Airplane,
                             Flight,
-                            Order, City, Country, Airline)
+                            Order, Country, Airline)
 
 from airport.serializers import (CrewSerializer,
                                  AirportSerializer,
@@ -74,7 +74,7 @@ class AirportViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(name__icontains=name)
 
         if closest_big_city:
-            queryset = queryset.filter(closest_big_city__icontains=closest_big_city)
+            queryset = queryset.filter(closest_big_city__id=closest_big_city)
 
         return queryset
 
