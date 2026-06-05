@@ -55,3 +55,22 @@ http://localhost:8001/
 
 - create user via api/v1/user/register/
 - get access token via api/v1/user/token/
+
+## Features
+
+- JWT authenticated
+- Admin panel /admin/
+- Documentation is located at 'api/v1/doc/swagger/' and 'api/v1/doc/redoc/'
+- Managing countries, cities and airports
+- Managing routes between airports
+- Managing airplane types and airplanes
+- Managing airlines and crews
+- Creating flights with routes, airplanes, airlines and crews
+- Managing orders and tickets
+- Filtering airports by city
+- Filtering flights by route, crew, departure date and arrival date
+- Filtering orders by creation date
+- Uploading images for crews and airplanes
+- Pagination for list endpoints
+- Throttling for API requests
+- Permissions for authenticated users and admin users
