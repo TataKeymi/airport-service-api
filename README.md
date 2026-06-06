@@ -26,7 +26,7 @@ POSTGRES_HOST=<your host name>
 POSTGRES_DB=<your db name>
 POSTGRES_USER=<your user name>
 POSTGRES_PASSWORD=<your password>
-POSTGRES_PORT=< your port
+POSTGRES_PORT=< your port>
 SECRET_KEY=<your secret key>
 DEBUG=True
 ```
